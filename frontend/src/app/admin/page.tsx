@@ -30,6 +30,7 @@ export default function AdminDashboard() {
 
   // File upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Lead distribution state
@@ -140,6 +141,7 @@ export default function AdminDashboard() {
     const formData = new FormData();
     formData.append('file', uploadFile);
 
+    setUploading(true);
     try {
       const response = await api.post('/admin/upload-leads', formData, {
         headers: {
@@ -152,8 +154,23 @@ export default function AdminDashboard() {
         fileInputRef.current.value = '';
       }
       fetchData();
-    } catch (error) {
-      // Error handled by interceptor
+    } catch (error: any) {
+      // Handle specific error for duplicate emails
+      if (error?.response?.data?.message === 'No valid leads to import') {
+        const errors = error.response.data.errors || [];
+        const duplicateCount = errors.filter((e: any) => e.message.includes('already exists')).length;
+
+        if (duplicateCount > 0 && duplicateCount === errors.length) {
+          toast.error(`All ${duplicateCount} leads already exist in the database. Please upload leads with different email addresses.`);
+        } else if (duplicateCount > 0) {
+          toast.error(`${duplicateCount} leads already exist. ${errors.length - duplicateCount} have missing fields.`);
+        } else {
+          toast.error('No valid leads to import. Check the file format and required fields.');
+        }
+      }
+      // Other errors handled by interceptor
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -684,10 +701,24 @@ export default function AdminDashboard() {
               </div>
               <button
                 type="submit"
-                className="btn btn-primary"
-                disabled={!uploadFile}
+                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                  !uploadFile || uploading
+                    ? 'bg-gray-400 cursor-not-allowed opacity-60'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+                disabled={!uploadFile || uploading}
               >
-                Upload Leads
+                {uploading ? (
+                  <span className="flex items-center text-white">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Uploading...
+                  </span>
+                ) : (
+                  'Upload Leads'
+                )}
               </button>
             </form>
           </div>

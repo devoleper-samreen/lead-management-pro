@@ -10,7 +10,7 @@ import teamLeaderRoutes from './src/routes/teamLeader.routes.js';
 import hrRoutes from './src/routes/hr.routes.js';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 
 // Connect to database
 connectDB();

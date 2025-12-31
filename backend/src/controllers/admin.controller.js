@@ -325,6 +325,10 @@ export const uploadLeads = async (req, res) => {
     const worksheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(worksheet);
 
+    console.log('📁 File uploaded:', req.file.originalname);
+    console.log('📊 Total rows in file:', data.length);
+    console.log('📝 First row data:', data[0]);
+
     if (data.length === 0) {
       // Clean up uploaded file
       fs.unlinkSync(filePath);
@@ -340,9 +344,15 @@ export const uploadLeads = async (req, res) => {
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
+      console.log(`\n🔍 Processing row ${i + 1}:`, row);
 
       // Validate required fields
       if (!row.name || !row.email || !row.phone) {
+        console.log(`❌ Row ${i + 1} - Missing fields:`, {
+          hasName: !!row.name,
+          hasEmail: !!row.email,
+          hasPhone: !!row.phone
+        });
         errors.push({
           row: i + 1,
           message: 'Missing required fields (name, email, phone)'
@@ -353,6 +363,7 @@ export const uploadLeads = async (req, res) => {
       // Check for duplicate email in database
       const existingLead = await Lead.findOne({ email: row.email });
       if (existingLead) {
+        console.log(`❌ Row ${i + 1} - Duplicate email:`, row.email);
         errors.push({
           row: i + 1,
           email: row.email,
@@ -361,6 +372,7 @@ export const uploadLeads = async (req, res) => {
         continue;
       }
 
+      console.log(`✅ Row ${i + 1} - Valid lead, adding to create list`);
       leadsToCreate.push({
         name: row.name,
         email: row.email,
@@ -376,6 +388,11 @@ export const uploadLeads = async (req, res) => {
 
     // Clean up uploaded file
     fs.unlinkSync(filePath);
+
+    console.log('\n📈 Summary:');
+    console.log('Total leads to create:', leadsToCreate.length);
+    console.log('Total errors:', errors.length);
+    console.log('Errors:', errors);
 
     if (leadsToCreate.length === 0) {
       return res.status(400).json({
