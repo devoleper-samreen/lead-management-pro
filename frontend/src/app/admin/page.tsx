@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   // File upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Lead distribution state
@@ -142,6 +143,7 @@ export default function AdminDashboard() {
     formData.append('file', uploadFile);
 
     setUploading(true);
+    setUploadError(null);
     try {
       const response = await api.post('/admin/upload-leads', formData, {
         headers: {
@@ -159,14 +161,19 @@ export default function AdminDashboard() {
       if (error?.response?.data?.message === 'No valid leads to import') {
         const errors = error.response.data.errors || [];
         const duplicateCount = errors.filter((e: any) => e.message.includes('already exists')).length;
+        const missingFieldsCount = errors.length - duplicateCount;
+        let errorMsg = '';
 
         if (duplicateCount > 0 && duplicateCount === errors.length) {
-          toast.error(`All ${duplicateCount} leads already exist in the database. Please upload leads with different email addresses.`);
-        } else if (duplicateCount > 0) {
-          toast.error(`${duplicateCount} leads already exist. ${errors.length - duplicateCount} have missing fields.`);
+          errorMsg = `All ${duplicateCount} leads already exist in the database. Please upload leads with different email addresses.`;
+        } else if (duplicateCount > 0 && missingFieldsCount > 0) {
+          errorMsg = `${duplicateCount} leads already exist in the database and ${missingFieldsCount} leads have missing required fields.`;
         } else {
-          toast.error('No valid leads to import. Check the file format and required fields.');
+          errorMsg = 'All leads have missing required fields (name, email, or phone). Please check your file format.';
         }
+
+        setUploadError(errorMsg);
+        return; // Don't show toast, error is displayed on screen
       }
       // Other errors handled by interceptor
     } finally {
@@ -692,7 +699,10 @@ export default function AdminDashboard() {
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,.xlsx,.xls"
-                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    setUploadFile(e.target.files?.[0] || null);
+                    setUploadError(null);
+                  }}
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 <p className="mt-2 text-sm text-gray-500">
@@ -720,6 +730,21 @@ export default function AdminDashboard() {
                   'Upload Leads'
                 )}
               </button>
+
+              {/* Error Display */}
+              {uploadError && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <h4 className="text-sm font-semibold text-red-800 mb-1">Upload Failed</h4>
+                      <p className="text-sm text-red-700">{uploadError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
 
