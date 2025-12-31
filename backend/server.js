@@ -17,11 +17,12 @@ connectDB();
 
 const app = express();
 
-// Middleware - Allow multiple origins for development
+// Middleware - Allow multiple origins for development and production
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
+  'https://lead-management-pro.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
