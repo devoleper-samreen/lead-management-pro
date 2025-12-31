@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsCard from '@/components/StatsCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -24,11 +24,7 @@ export default function HRDashboard() {
   const [updateNotes, setUpdateNotes] = useState('');
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [statusFilter]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [statsRes, leadsRes] = await Promise.all([
@@ -43,7 +39,11 @@ export default function HRDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const openUpdateModal = (lead: Lead) => {
     setSelectedLead(lead);
