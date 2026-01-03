@@ -70,9 +70,24 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          {/* Mobile Header */}
+          <div className="flex sm:hidden justify-between items-center py-3">
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Lead Management</h1>
+              <p className="text-xs text-gray-500">{getRoleName(user.role)}</p>
+            </div>
+            <button
+              onClick={logout}
+              className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+
+          {/* Desktop Header */}
+          <div className="hidden sm:flex justify-between items-center py-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 Lead Management

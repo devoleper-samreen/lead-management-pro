@@ -41,6 +41,11 @@ export default function LoginPage() {
     }
   };
 
+  const fillCredentials = (userEmail: string, userPassword: string) => {
+    setEmail(userEmail);
+    setPassword(userPassword);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
@@ -68,15 +73,33 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Demo Credentials */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs font-semibold text-blue-900 mb-2">Demo Credentials:</p>
-            <p className="text-xs text-blue-700">
-              <span className="font-medium">Email:</span> admin@leadmanagement.com
-            </p>
-            <p className="text-xs text-blue-700">
-              <span className="font-medium">Password:</span> admin123
-            </p>
+          {/* Quick Login Buttons */}
+          <div className="mb-6 space-y-3">
+            <p className="text-xs font-semibold text-gray-700 mb-3">Quick Login:</p>
+
+            <button
+              type="button"
+              onClick={() => fillCredentials('admin@leadmanagement.com', 'admin123')}
+              className="w-full px-4 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors"
+            >
+              Get Admin Credentials
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fillCredentials('rajesh.kumar@leadmanagement.com', '12345678')}
+              className="w-full px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors"
+            >
+              Get Team Leader Credentials
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fillCredentials('neha.singh@leadmanagement.com', '12345678')}
+              className="w-full px-4 py-2 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-sm font-medium text-green-700 transition-colors"
+            >
+              Get HR Credentials
+            </button>
           </div>
 
           {/* Form */}
